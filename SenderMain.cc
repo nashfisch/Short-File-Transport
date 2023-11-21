@@ -23,29 +23,46 @@ int main(int argc, char* argv[]) {
     char* header;
     uint8_t* caster;
 
-
-    
+    std::cout << "Gets to creating sender" << std::endl;    
     Sender sender(senderDes, senderPort, 3);
+    std::cout << "Creates sender" << std::endl;    
     /*
     std::cout << "Enter a message: ";
     std::getline(std::cin, message);
     sender.SendMessage(message);
     */
+    std::cout << "Gets to creating header" << std::endl; 
+
     SimpleHeader* myHeader = new SimpleHeader();
     myHeader->setType(1);
     myHeader->setTR(0);
     myHeader->setWindow(1);
     myHeader->setSeqNum(0);
     myHeader->setLength(512);
-    caster = myHeader->getBufferAddress();
 
+    std::cout << "Fills in header" << std::endl; 
+   
+    caster = myHeader->getBufferAddress();
+    std::cout << "u_int8* Rep: ";
+    
+    for (int i = 0; i < 2; i++){
+        std::cout << caster[i];
+    }
+    
+    
     header = (char *) caster;
+    std::cout << "Casts header" << std::endl; 
+    std::cout << "char* Rep: " << header << std::endl;
 
     unsigned long crc;
+    std::cout << "CRC Line 1" << std::endl;
     crc = crc32(0L, NULL, 0);
+    std::cout << "CRC Line 2" << std::endl;
     crc = crc32(crc, reinterpret_cast<const Bytef*>(header), strlen(header));
+    std::cout << "CRC Line 3" << std::endl;
     std::cout << "The crc32 value for: " << &header << " is " << std::hex << crc << std::endl;
     myHeader->setCRC1(crc);
+
 
     std::ifstream ifi;
     ifi.open("Receiver.cc", std::ios::binary);
@@ -69,7 +86,9 @@ int main(int argc, char* argv[]) {
    
     sender.SendMessage(header);
 
-
+    delete myHeader;
+    delete header;
+    delete caster;
 
 
     return 0;
