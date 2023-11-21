@@ -39,9 +39,9 @@ void Sender::Initialize() {
     }
 }
 
-void Sender::SendMessage(const std::string& message) {
+void Sender::SendMessage(char* message) {
     
-    if (sendto(sock, message.c_str(), message.length(), 0, destAddr->ai_addr, destAddr->ai_addrlen) == -1) {
+    if (sendto(sock, message, strlen(message), 0, destAddr->ai_addr, destAddr->ai_addrlen) == -1) {
         std::cerr << "Error sending the message" << std::endl;
         exit(1);
     }
@@ -59,8 +59,11 @@ void Sender::SendMessage(const std::string& message) {
 }
 
 
+/*
+void Sender::SendFile(std::string& fileName) {
+    
 
-std::string Sender::SendFile(std::string& fileName) {
+    REMOVING, relocating to SenderMain. New functionality of SendFile will be just sending the finalized packet.
     
     std::ifstream ifi;
     ifi.open(fileName, std::ios::binary);
@@ -80,13 +83,13 @@ std::string Sender::SendFile(std::string& fileName) {
 
     std::string temp;
     temp = buffer;
-/*
+
      if (!ifi.eof()) {
         std::cout << "Error reading from file." << std::endl;
      } else {
         std::cout << "End of file reached." << std::endl;
      }
-     */
+     
 
      for (int i = 0; i < 512; i++) {
         std::cout << buffer[i] << std::endl;
@@ -95,3 +98,4 @@ std::string Sender::SendFile(std::string& fileName) {
      ifi.close();
      return temp;
 }
+*/
