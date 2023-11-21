@@ -10,6 +10,8 @@
 #include <netdb.h>
 #include <zlib.h>
 
+#define BUFFER_SIZE 520
+
 int main(int argc, char* argv[]) {
     if (argc != 4) {
         std::cerr << "Usage " << argv[0] << " sender_host, sender_port, sender_filename" << std::endl;
@@ -20,8 +22,8 @@ int main(int argc, char* argv[]) {
     std::string senderPort = argv[2];
     std::string senderFile = argv[3];
     std::string message = "";
-    char* header;
-    uint8_t* caster;
+    char* header = new char[BUFFER_SIZE];
+    uint8_t* buffer = new uint8_t[BUFFER_SIZE];
 
     std::cout << "Gets to creating sender" << std::endl;    
     Sender sender(senderDes, senderPort, 3);
@@ -34,23 +36,25 @@ int main(int argc, char* argv[]) {
     std::cout << "Gets to creating header" << std::endl; 
 
     SimpleHeader* myHeader = new SimpleHeader();
-    myHeader->setType(1);
+    myHeader->setBuffer(buffer, BUFFER_SIZE);
+
+    myHeader->setType(1); 
     myHeader->setTR(0);
     myHeader->setWindow(1);
-    myHeader->setSeqNum(0);
-    myHeader->setLength(512);
+    myHeader->setSeqNum(0); // header[1]
+    myHeader->setLength(0x0200); // header[2] and header[3]
 
     std::cout << "Fills in header" << std::endl; 
    
-    caster = myHeader->getBufferAddress();
+    buffer = myHeader->getBufferAddress();
     std::cout << "u_int8* Rep: ";
     
-    for (int i = 0; i < 2; i++){
-        std::cout << caster[i];
+    for (int i = 0; i < 4; i++){
+        std::cout << std::hex << buffer[i]  << i << std::endl;
     }
     
     
-    header = (char *) caster;
+    header = (char *) buffer;
     std::cout << "Casts header" << std::endl; 
     std::cout << "char* Rep: " << header << std::endl;
 
@@ -61,7 +65,7 @@ int main(int argc, char* argv[]) {
     crc = crc32(crc, reinterpret_cast<const Bytef*>(header), strlen(header));
     std::cout << "CRC Line 3" << std::endl;
     std::cout << "The crc32 value for: " << &header << " is " << std::hex << crc << std::endl;
-    myHeader->setCRC1(crc);
+    myHeader->setCRC1(crc); // header[4] - header[8]
 
 
     std::ifstream ifi;
@@ -73,6 +77,7 @@ int main(int argc, char* argv[]) {
 
     char payload[512];
     ifi.read(payload, 512);
+  
 
     if (ifi) {
         std::cout << "All characters read." << std::endl;
@@ -81,14 +86,26 @@ int main(int argc, char* argv[]) {
     }
     
     unsigned int plug = myHeader->getLength();
-    header[plug] = *payload;
-
+    //header[8] = *payload;
+    char temp;
+    for (char i = 8; i < 520; i ++){
+        temp = payload[i];
+        header[i] = &temp;
+    }
+    for (int i = 0; i < 500; i++){
+        std::cout << "HEADER" << header[i]  << std::endl;
+    }
+    for (int i = 0; i < 500; i++){   
+        std::cout << "BUFFER" << buffer[i]  << std::endl;
+    }
+        
+  
    
     sender.SendMessage(header);
 
     delete myHeader;
     delete header;
-    delete caster;
+    delete buffer;
 
 
     return 0;
