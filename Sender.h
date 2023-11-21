@@ -29,9 +29,9 @@ public:
    * @brief Sends a message to the receiver.
    * @param message: The message that is to be sent
   */
-  void SendMessage(const std::string& message);
+  void SendMessage(char* message);
 
-  std::string SendFile(std::string& fileName);
+  //void SendFile(std::string& fileName);
 
   //bool req(int SN);
   //int retransmit();
