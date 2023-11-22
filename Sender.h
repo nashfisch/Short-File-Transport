@@ -1,6 +1,7 @@
 #ifndef SENDER_H
 #define SENDER_H
 #include "SlidingWindow.h"
+#include "SimpleHeader.h"
 #include <string>
 #include <cstring>
 #include <sys/types.h>
@@ -29,7 +30,7 @@ public:
    * @brief Sends a message to the receiver.
    * @param message: The message that is to be sent
   */
-  void SendMessage(char* message, int packetLength);
+  void SendMessage(char* message, int packetLength, SimpleHeader* header);
 
   //void SendFile(std::string& fileName);
 
