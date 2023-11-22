@@ -43,9 +43,12 @@ int main(int argc, char* argv[]) {
             std::getline(std::cin, contents);
 
             payloadSize = contents.size();
+
+            
+
             myHeader->setPayloadLength(payloadSize); // header[2] and header[3]
             for (int i = 12; i < payloadSize; i++){
-                buffer[i] = contents[i - 12];
+                buffer[i] = contents.c_str()[i - 12];
             }
             senderDes = argv[1];
             senderPort = argv[2];
@@ -101,8 +104,13 @@ int main(int argc, char* argv[]) {
 
     crc2 = crc32(0L, NULL, 0);
     crc2 = crc32(crc2, reinterpret_cast<const Bytef*>(goodStuff), payloadSize);
-    myHeader->setCRC2(crc2);
+
+    std::cout << "CRC2" << crc2 << std::endl;
+
+    myHeader->setCRC2(crc2, payloadSize);
     header = reinterpret_cast<char*>(buffer);
+
+    std::cout << goodStuff <<std::endl;
 
     packetLength = 16 + payloadSize;
     sender.SendMessage(header, packetLength, myHeader);

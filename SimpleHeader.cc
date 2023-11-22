@@ -169,17 +169,17 @@ void SimpleHeader::setCRC1(unsigned int val) {
 }
 
 
-void SimpleHeader::setCRC2(unsigned int val) {
+void SimpleHeader::setCRC2(unsigned int val, int payloadSize) {
   if (packet != nullptr && size > HEADER_SZ) {
-    packet[524] &= 0x00;
-    packet[525] &= 0x00;
-    packet[526] &= 0x00;
-    packet[527] &= 0x00;
+    packet[payloadSize + 12] &= 0x00;
+    packet[payloadSize + 13] &= 0x00;
+    packet[payloadSize + 14] &= 0x00;
+    packet[payloadSize + 15] &= 0x00;
 
-    packet[524] |= val >> 24;
-    packet[525] |= (0xFF & val >> 16);
-    packet[526] |= (0xFF & val >> 8);
-    packet[527] |= (0xFF & val);
+    packet[payloadSize + 12] |= val >> 24;
+    packet[payloadSize + 13] |= (0xFF & val >> 16);
+    packet[payloadSize + 14] |= (0xFF & val >> 8);
+    packet[payloadSize + 15] |= (0xFF & val);
   }
 }
 
