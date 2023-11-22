@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include "Sender.h"
 #include "SlidingWindow.h"
@@ -39,9 +40,9 @@ void Sender::Initialize() {
     }
 }
 
-void Sender::SendMessage(char* message) {
-    
-    if (sendto(sock, message, strlen(message), 0, destAddr->ai_addr, destAddr->ai_addrlen) == -1) {
+void Sender::SendMessage(char* message, int packetLength) {
+
+    if (sendto(sock, message, packetLength, 0, destAddr->ai_addr, destAddr->ai_addrlen) == -1) {
         std::cerr << "Error sending the message" << std::endl;
         exit(1);
     }

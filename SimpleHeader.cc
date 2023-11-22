@@ -123,6 +123,7 @@ void SimpleHeader::setLength(unsigned int val) {
   }
 }
 
+
 unsigned int SimpleHeader::getCRC1() const {
   if (packet != nullptr && size > HEADER_SZ) {
     unsigned int temp;
@@ -138,6 +139,21 @@ unsigned int SimpleHeader::getCRC1() const {
   }
 }
 
+void SimpleHeader::setTimeStamp(unsigned int val) {
+  if (packet != nullptr && size > HEADER_SZ) {
+    packet[4] &= 0x00;
+    packet[5] &= 0x00;
+    packet[6] &= 0x00;
+    packet[7] &= 0x00;
+
+    packet[4] |= val >> 24;
+    packet[5] |= (0xFF & val >> 16);
+    packet[6] |= (0xFF & val >> 8);
+    packet[7] |= (0xFF & val);
+  }
+}
+
+
 void SimpleHeader::setCRC1(unsigned int val) {
   if (packet != nullptr && size > HEADER_SZ) {
     packet[8] &= 0x00;
@@ -152,6 +168,20 @@ void SimpleHeader::setCRC1(unsigned int val) {
   }
 }
 
+
+void SimpleHeader::setCRC2(unsigned int val) {
+  if (packet != nullptr && size > HEADER_SZ) {
+    packet[524] &= 0x00;
+    packet[525] &= 0x00;
+    packet[526] &= 0x00;
+    packet[527] &= 0x00;
+
+    packet[524] |= val >> 24;
+    packet[525] |= (0xFF & val >> 16);
+    packet[526] |= (0xFF & val >> 8);
+    packet[527] |= (0xFF & val);
+  }
+}
 
 
 

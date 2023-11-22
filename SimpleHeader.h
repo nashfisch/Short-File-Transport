@@ -71,7 +71,8 @@ public:
   void setLength(unsigned int val);
   unsigned int getCRC1() const;
   void setCRC1(unsigned int val);
-
+  void setTimeStamp(unsigned int val);
+  void setCRC2(unsigned int val);
 
   // returns the size of the packet in bytes, including headers and data
   // to be used with recvfrom() or sendto()

@@ -29,7 +29,7 @@ public:
    * @brief Sends a message to the receiver.
    * @param message: The message that is to be sent
   */
-  void SendMessage(char* message);
+  void SendMessage(char* message, int packetLength);
 
   //void SendFile(std::string& fileName);
 
