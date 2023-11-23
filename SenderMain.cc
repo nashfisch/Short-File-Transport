@@ -36,6 +36,8 @@ int main(int argc, char* argv[]) {
     myHeader->setSeqNum(0); // header[1]
     myHeader->setTimeStamp(0);
     bool args3;
+
+    std::string fileCommand = argv[1];
     
     if (argc != 5) {
         if (argc == 3 && argv[1] != "-f") {
@@ -46,8 +48,8 @@ int main(int argc, char* argv[]) {
 
             
 
-            myHeader->setPayloadLength(payloadSize); // header[2] and header[3]
-            for (int i = 12; i < payloadSize; i++){
+            
+            for (int i = 12; i < payloadSize + 12; i++){
                 buffer[i] = contents.c_str()[i - 12];
             }
             senderDes = argv[1];
@@ -59,7 +61,7 @@ int main(int argc, char* argv[]) {
             return 1;
         }
         
-    } else if (argc == 5 && argv[1] == "-f") {
+    } else if (argc == 5 && fileCommand == "-f") {
         senderFile = argv[2];
         senderDes = argv[3];
         senderPort = argv[4];
@@ -73,21 +75,21 @@ int main(int argc, char* argv[]) {
         }
 
         ifi.read(payload, PAYLOAD_MAX);
-        std::streamsize payloadSize = ifi.gcount();
-        for (int i = 12; i < payloadSize; i++){
+        payloadSize = ifi.gcount();
+        for (int i = 12; i < payloadSize + 12; i++){
             buffer[i] = payload[i - 12];
         }
-        if (ifi) {
+
+        if (ifi.eof()) {
             std::cout << "All characters read." << std::endl;
         } else {
             std::cout << "File too large. Cutoff at 512 bytes." << std::endl;
         }
     } else {
-        std::cout << argc << "   " << argv[1] << std::endl;
         std::cerr << "Usage " << argv[0] << "[-f sender_filename] sender_host, sender_port" << std::endl;
         return 1;
     }
-
+    myHeader->setPayloadLength(payloadSize); // header[2] and header[3]
     Sender sender(senderDes, senderPort, 3);
 
     unsigned long crc1;
@@ -95,9 +97,9 @@ int main(int argc, char* argv[]) {
 
     crc1 = crc32(0L, NULL, 0);
     crc1 = crc32(crc1, reinterpret_cast<const Bytef*>(buffer), 8);
-
+ 
     myHeader->setCRC1(crc1); // header[4] - header[8]
-   
+
     goodStuff = &buffer[12];
 
 
@@ -105,12 +107,9 @@ int main(int argc, char* argv[]) {
     crc2 = crc32(0L, NULL, 0);
     crc2 = crc32(crc2, reinterpret_cast<const Bytef*>(goodStuff), payloadSize);
 
-    std::cout << "CRC2" << crc2 << std::endl;
-
     myHeader->setCRC2(crc2, payloadSize);
-    header = reinterpret_cast<char*>(buffer);
 
-    std::cout << goodStuff <<std::endl;
+    header = reinterpret_cast<char*>(buffer);
 
     packetLength = 16 + payloadSize;
     sender.SendMessage(header, packetLength, myHeader);
