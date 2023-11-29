@@ -78,7 +78,8 @@ void Receiver::ReceiveMessage() {
     close(sock);
 }
 
-void Receiver::ReceiveFile(std::string fileName, std::ofstream stream) {
+void Receiver::ReceiveFile(std::string fileName, std::ofstream& stream) {
+    stream.open(fileName, std::ios::binary);
     char buffer[1024];
     // socklen_t clientAddressLength;
     struct sockaddr_storage fromAddr;
@@ -89,7 +90,10 @@ void Receiver::ReceiveFile(std::string fileName, std::ofstream stream) {
         std::cerr << "Error receiving data" << std::endl;
     }
     buffer[receivedBytes] = 0;
-    stream << buffer;
+    for (int i = 0; i < receivedBytes - 4; i++){
+        stream << buffer[i + 12];
+    }
+    
     // Set bounceback packet type to 2 (ACK)
     buffer[0] &= 0x3f;
     buffer[0] |= (2 << 6); 
