@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include "Receiver.h"
 #include "SlidingWindow.h"
@@ -76,4 +77,26 @@ void Receiver::ReceiveMessage() {
 
     close(sock);
 }
+
+void Receiver::ReceiveFile(std::string fileName, std::ofstream stream) {
+    char buffer[1024];
+    // socklen_t clientAddressLength;
+    struct sockaddr_storage fromAddr;
+    fromAddrLength = sizeof(fromAddr);
+    // Does this get header + payload or just payload?
+    int receivedBytes = recvfrom(sock, buffer, sizeof(buffer)-1, 0, (struct sockaddr*)&fromAddr, &fromAddrLength);
+    if (receivedBytes == -1) {
+        std::cerr << "Error receiving data" << std::endl;
+    }
+    buffer[receivedBytes] = 0;
+    stream << buffer;
+    // Set bounceback packet type to 2 (ACK)
+    buffer[0] &= 0x3f;
+    buffer[0] |= (2 << 6); 
+    // Sendto used for bounceback
+    sendto(sock, buffer, sizeof(buffer) - 1, 0, (struct sockaddr*)&fromAddr, fromAddrLength);
+
+    close(sock);
+}
+
 

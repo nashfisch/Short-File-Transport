@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <iostream>
+#include <fstream>
 #include <netdb.h>
 
 
@@ -33,7 +34,7 @@ public:
   */
   void ReceiveMessage(); 
 
-  void ReceiveFile(std::string fileName);
+  void ReceiveFile(std::string fileName, std::ofstream stream);
     
 private:
   // Port number being listened to
