@@ -63,7 +63,7 @@ void Receiver::ReceiveMessage() {
     // socklen_t clientAddressLength;
     struct sockaddr_storage fromAddr;
     fromAddrLength = sizeof(fromAddr);
-    
+    // Does this get header + payload or just payload?
     int receivedBytes = recvfrom(sock, buffer, sizeof(buffer)-1, 0, (struct sockaddr*)&fromAddr, &fromAddrLength);
     if (receivedBytes == -1) {
         std::cerr << "Error receiving data" << std::endl;

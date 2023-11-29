@@ -6,22 +6,57 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <iostream>
+#include <fstream>
 #include <netdb.h>
 
 int main(int argc, char* argv[]) {
-    if (argc != 3) {
-        std::cerr << "Usage " << argv[0] << " receiver_port, IPv# (-4 or -6)" << std::endl;
+    // Copied and pasted from sender
+    std::ofstream Payload;
+    std::string fileName;
+    std::string IPv;
+    std::string receiverPort;
+    if (argc != 5) {
+        if (argc == 4 && argv[1] == "-f"){ //receiver -f filename port
+            fileName = argv[2];
+            Payload.open(fileName);
+            IPv = 4;
+            receiverPort = argv[3];
+        } else if (argc == 3 && argv[1] == "-6") { // receiver -6 port
+            fileName = "Payload.txt";
+            Payload.open(fileName);
+            IPv = argv[1];
+            receiverPort = argv[2];
+        } else if (argc == 2) { // receiver port
+            fileName = "Payload.txt";
+            Payload.open(fileName);
+            IPv = 4;
+            receiverPort = argv[1];
+        } else {
+            std::cerr << "Usage " << argv[0] << "[-6], receiver_port" << std::endl;
+            return 1;
+        }
+
+    } else if (argc == 5 && argv[1] == "-f" && argv[3] == "-6") {
+        fileName = argv[2];
+        Payload.open(fileName);
+        IPv = argv[3];
+        receiverPort = argv[4];
+    } else if (argc == 4 && argv[1] == "-f") {
+        fileName = argv[2];
+        Payload.open(fileName);
+        IPv = 4;
+        receiverPort = argv[3];
+    } else {
+        std::cerr << "Usage " << argv[0] << "[-f filename], port" << std::endl;
         return 1;
     }
-    std::string receiverPort = argv[1];
-    std::string IPv = argv[2];
 
 
     Receiver receiver(receiverPort, IPv, 3);
 
 
     receiver.ReceiveMessage();
-
+    Payload.close();
 
     return 0;
 }
