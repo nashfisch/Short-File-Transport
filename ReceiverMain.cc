@@ -18,17 +18,14 @@ int main(int argc, char* argv[]) {
     if (argc != 5) {
         if (argc == 4 && argv[1] == "-f"){ //receiver -f filename port
             fileName = argv[2];
-            Payload.open(fileName);
             IPv = 4;
             receiverPort = argv[3];
         } else if (argc == 3 && argv[1] == "-6") { // receiver -6 port
             fileName = "Payload.txt";
-            Payload.open(fileName);
             IPv = argv[1];
             receiverPort = argv[2];
         } else if (argc == 2) { // receiver port
             fileName = "Payload.txt";
-            Payload.open(fileName);
             IPv = 4;
             receiverPort = argv[1];
         } else {
@@ -38,12 +35,11 @@ int main(int argc, char* argv[]) {
 
     } else if (argc == 5 && argv[1] == "-f" && argv[3] == "-6") {
         fileName = argv[2];
-        Payload.open(fileName);
         IPv = argv[3];
         receiverPort = argv[4];
     } else if (argc == 4 && argv[1] == "-f") {
         fileName = argv[2];
-        Payload.open(fileName);
+        
         IPv = 4;
         receiverPort = argv[3];
     } else {
@@ -55,7 +51,7 @@ int main(int argc, char* argv[]) {
     Receiver receiver(receiverPort, IPv, 3);
 
 
-    receiver.ReceiveMessage();
+    receiver.ReceiveFile(fileName, Payload);
     Payload.close();
 
     return 0;
