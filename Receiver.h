@@ -34,7 +34,7 @@ public:
   */
   void ReceiveMessage(); 
 
-  void ReceiveFile(std::string fileName, std::ofstream stream);
+  void ReceiveFile(std::string fileName, std::ofstream& stream);
     
 private:
   // Port number being listened to
