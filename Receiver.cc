@@ -1,14 +1,20 @@
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <vector>
 #include "Receiver.h"
 #include "SlidingWindow.h"
+#include "SimpleHeader.h"
 #include <string>
 #include <cstring>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <unistd.h>
 #include <netdb.h>
+#include <zlib.h>
+
+#define BUFFER_SIZE 528
+#define PAYLOAD_MAX 512
 
 /*
 Receiver::Receiver(int max) : SlidingWindow(max){
@@ -80,25 +86,61 @@ void Receiver::ReceiveMessage() {
 
 void Receiver::ReceiveFile(std::string fileName, std::ofstream& stream) {
     stream.open(fileName, std::ios::binary);
-    char buffer[1024];
+    char buffer[BUFFER_SIZE];
+    char buffer2[12];
+    char* betterStuff = nullptr;
+    char* ptr = nullptr;
+    SimpleHeader* myHeader = new SimpleHeader();
+
+    unsigned long crc1;
+    unsigned long crc2;
+    
     // socklen_t clientAddressLength;
     struct sockaddr_storage fromAddr;
     fromAddrLength = sizeof(fromAddr);
     // Does this get header + payload or just payload?
     int receivedBytes = recvfrom(sock, buffer, sizeof(buffer)-1, 0, (struct sockaddr*)&fromAddr, &fromAddrLength);
+    int payloadlen = receivedBytes - 16;
+    //int timestamp = 
+    myHeader->setBuffer(buffer, BUFFER_SIZE);
+    myHeader->setType(2); 
+    myHeader->setTR(0);
+    myHeader->setWindow(31);
+    myHeader->setSeqNum(1); // header[1]
+    //myHeader->setTimeStamp(0);
+    myHeader->setPayloadLength(0);
+
+    crc1 = crc32(0L, NULL, 0);
+    crc1 = crc32(crc1, reinterpret_cast<const Bytef*>(buffer), 8);
+    myHeader->setCRC1(crc1);
+
+    
+
     if (receivedBytes == -1) {
         std::cerr << "Error receiving data" << std::endl;
     }
     buffer[receivedBytes] = 0;
-    for (int i = 0; i < receivedBytes - 4; i++){
+
+    for (int i = 0; i < receivedBytes - 16; i++){
         stream << buffer[i + 12];
     }
     
-    // Set bounceback packet type to 2 (ACK)
-    buffer[0] &= 0x3f;
-    buffer[0] |= (2 << 6); 
+    for (int i = 0; i < 12; i++){
+        buffer2[i] = buffer[i];
+    }
+    
+
+    //betterStuff = &buffer2[12];
+
+    /*
+    crc2 = crc32(0L, NULL, 0);
+    crc2 = crc32(crc2, reinterpret_cast<const Bytef*>(betterStuff), receivedBytes - 16);
+    
+    myHeader->setCRC2(crc2, receivedBytes - 16);
+    */
+
     // Sendto used for bounceback
-    sendto(sock, buffer, sizeof(buffer) - 1, 0, (struct sockaddr*)&fromAddr, fromAddrLength);
+    sendto(sock, buffer2, sizeof(buffer2), 0, (struct sockaddr*)&fromAddr, fromAddrLength);
 
     close(sock);
 }
