@@ -4,7 +4,7 @@ SRC_DIR = .
 OBJ_DIR = obj
 BIN_DIR = bin
 
-RECEIVER_SOURCES = $(SRC_DIR)/Receiver.cc $(SRC_DIR)/SlidingWindow.cc $(SRC_DIR)/ReceiverMain.cc
+RECEIVER_SOURCES = $(SRC_DIR)/Receiver.cc $(SRC_DIR)/SlidingWindow.cc $(SRC_DIR)/ReceiverMain.cc $(SRC_DIR)/SimpleHeader.cc
 RECEIVER_OBJECTS = $(patsubst $(SRC_DIR)/%.cc, $(OBJ_DIR)/receiver_%.o, $(RECEIVER_SOURCES))
 RECEIVER_EXECUTABLE = $(BIN_DIR)/receiver
 
@@ -16,7 +16,7 @@ all: $(RECEIVER_EXECUTABLE) $(SENDER_EXECUTABLE)
 
 $(RECEIVER_EXECUTABLE): $(RECEIVER_OBJECTS)
 	@mkdir -p $(@D)
-	$(CXX) $(CXXFLAGS) -o $@ $^
+	$(CXX) $(CXXFLAGS) -o $@ $^ -lz
 
 $(SENDER_EXECUTABLE): $(SENDER_OBJECTS)
 	@mkdir -p $(@D)
