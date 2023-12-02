@@ -14,6 +14,7 @@
 #include <zlib.h>
 
 #define BUFFER_SIZE 528
+#define ACK_SIZE 12
 #define PAYLOAD_MAX 512
 
 /*
@@ -86,10 +87,9 @@ void Receiver::ReceiveMessage() {
 
 void Receiver::ReceiveFile(std::string fileName, std::ofstream& stream) {
     stream.open(fileName, std::ios::binary);
-    char buffer[BUFFER_SIZE];
-    char buffer2[12];
-    char* betterStuff = nullptr;
-    char* ptr = nullptr;
+    char buffer[BUFFER_SIZE]; //receiving buffer
+    char buffer2[ACK_SIZE]; //acknowledgement buffer
+
     SimpleHeader* myHeader = new SimpleHeader();
 
     unsigned long crc1;
@@ -98,49 +98,52 @@ void Receiver::ReceiveFile(std::string fileName, std::ofstream& stream) {
     // socklen_t clientAddressLength;
     struct sockaddr_storage fromAddr;
     fromAddrLength = sizeof(fromAddr);
-    // Does this get header + payload or just payload?
+
+    // FIRST PTYPE_DATA Packet Received
     int receivedBytes = recvfrom(sock, buffer, sizeof(buffer)-1, 0, (struct sockaddr*)&fromAddr, &fromAddrLength);
+
+
+    if (receivedBytes == -1) { // this means transmission error? not the same as receiving a PTYPE DATA segment with field TR set to 1?
+        // Previously cerr statement, now need to send PTYPE_NACK Packet? possibly another else if case for if sender packet has TR = 1
+        /*
+        myHeader->setBuffer(buffer2, BUFFER_SIZE);
+        myHeader->setType(3); 
+        myHeader->setTR(0);
+        myHeader->setWindow(31);  //the field indicates the number of empty or available segments in the receiving window of the source host.
+        myHeader->setSeqNum(1); 
+        //myHeader->setTimeStamp(0);
+        myHeader->setPayloadLength(0);
+        crc1 = crc32(0L, NULL, 0);
+        crc1 = crc32(crc1, reinterpret_cast<const Bytef*>(buffer), 8);
+        myHeader->setCRC1(crc1);
+        */
+    }
+
+
     int payloadlen = receivedBytes - 16;
-    //int timestamp = 
-    myHeader->setBuffer(buffer, BUFFER_SIZE);
+    // Send first PTYPE_ACK Packet
+    myHeader->setBuffer(buffer2, ACK_SIZE);
     myHeader->setType(2); 
     myHeader->setTR(0);
-    myHeader->setWindow(31);
-    myHeader->setSeqNum(1); // header[1]
+    myHeader->setWindow(31);  //the field indicates the number of empty or available segments in the receiving window of the source host.
+    myHeader->setSeqNum(1); 
     //myHeader->setTimeStamp(0);
     myHeader->setPayloadLength(0);
-
     crc1 = crc32(0L, NULL, 0);
     crc1 = crc32(crc1, reinterpret_cast<const Bytef*>(buffer), 8);
     myHeader->setCRC1(crc1);
 
-    
-
-    if (receivedBytes == -1) {
-        std::cerr << "Error receiving data" << std::endl;
-    }
+    //write output to file
     buffer[receivedBytes] = 0;
-
     for (int i = 0; i < receivedBytes - 16; i++){
         stream << buffer[i + 12];
     }
-    
-    for (int i = 0; i < 12; i++){
-        buffer2[i] = buffer[i];
-    }
-    
-
-    //betterStuff = &buffer2[12];
-
-    /*
-    crc2 = crc32(0L, NULL, 0);
-    crc2 = crc32(crc2, reinterpret_cast<const Bytef*>(betterStuff), receivedBytes - 16);
-    
-    myHeader->setCRC2(crc2, receivedBytes - 16);
-    */
 
     // Sendto used for bounceback
     sendto(sock, buffer2, sizeof(buffer2), 0, (struct sockaddr*)&fromAddr, fromAddrLength);
+
+    
+    // Now need 
 
     close(sock);
 }

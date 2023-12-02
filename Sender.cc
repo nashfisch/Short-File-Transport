@@ -49,7 +49,7 @@ void Sender::SendMessage(char* message, int packetLength, SimpleHeader* header) 
         exit(1);
     }
     u_int8_t* ptr = nullptr;
-    u_int8_t bounceback[524];
+    u_int8_t bounceback[12];
     socklen_t clientAddressLength;
     struct sockaddr_storage fromaddr;
     clientAddressLength = sizeof(fromaddr);
@@ -61,7 +61,7 @@ void Sender::SendMessage(char* message, int packetLength, SimpleHeader* header) 
     }
 
     //bounceback[receivedBytes] = 0;
-    if ((bounceback[0] >> 6) == 2){
+    if ((bounceback[0] >> 6) == 2){ //PTYPE_ACK
         ptr = header->getBufferAddress();
         header->setType(1);
         header->setTR(0);
